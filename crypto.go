@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,27 +8,23 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
 	var result Result
 	coinmarketcapIds := []string{}
 	coinQty := make(map[string]float64)
-	csvPortfolio := readCsvFile("portfolio.csv")
+	userData := readYamlFile("crypto.yaml")
 	coinmarketcapQuoteUrl := "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest"
-	apiKey := "<your-apikey>"
+	apiKey := userData.ApiKey
 	var portfolio Portfolio
 
-	for coins := range csvPortfolio {
-		coinmarketcapIds = append(coinmarketcapIds, csvPortfolio[coins][0])
-		i, err := strconv.ParseFloat(strings.TrimSpace(csvPortfolio[coins][1]), 64)
-		if err != nil {
-			printError(&result, err.Error())
-			os.Exit(0)
-		}
-		coinQty[csvPortfolio[coins][0]] = i
+	for coinId, quantity := range userData.Positions {
+		coinmarketcapIds = append(coinmarketcapIds, coinId)
+		coinQty[coinId] = quantity
 	}
 
 	client := &http.Client{}
@@ -76,25 +71,24 @@ func main() {
 		result.Success = true
 	}
 
-	marshaledResult, _ := json.MarshalIndent(result, "", "    ")
+	marshaledResult, _ := json.Marshal(result)
 	fmt.Println(string(marshaledResult))
 	os.Exit(0)
 }
 
-func readCsvFile(filePath string) [][]string {
-	f, err := os.Open(filePath)
+func readYamlFile(filePath string) Yml {
+	b, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
 	}
-	defer f.Close()
+	var yamlFile Yml
 
-	csvReader := csv.NewReader(f)
-	records, err := csvReader.ReadAll()
+	err = yaml.Unmarshal([]byte(b), &yamlFile)
 	if err != nil {
-		log.Fatal("Unable to parse file as CSV for "+filePath, err)
+		panic(err)
 	}
 
-	return records
+	return yamlFile
 }
 
 func printError(result *Result, error string) {
@@ -132,4 +126,9 @@ type Portfolio struct {
 type Position struct {
 	Quantity float64 `json:"quantity"`
 	Value    float64 `json:"value"`
+}
+
+type Yml struct {
+	ApiKey    string             `yaml:"apiKey"`
+	Positions map[string]float64 `yaml:"positions"`
 }

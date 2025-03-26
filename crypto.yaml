@@ -1,0 +1,4 @@
+apiKey: <your-api-key>
+positions:
+  1: 0.01
+  1027: 0.5
