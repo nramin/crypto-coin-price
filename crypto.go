@@ -18,8 +18,6 @@ func main() {
 	coinmarketcapIds := []string{}
 	coinQty := make(map[string]float64)
 	userData := readYamlFile("crypto.yaml")
-	coinmarketcapQuoteUrl := "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest"
-	apiKey := userData.ApiKey
 	var portfolio Portfolio
 
 	for coinId, quantity := range userData.Positions {
@@ -27,34 +25,7 @@ func main() {
 		coinQty[coinId] = quantity
 	}
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", coinmarketcapQuoteUrl, nil)
-	if err != nil {
-		printError(&result, err.Error())
-		os.Exit(0)
-	}
-
-	q := url.Values{}
-	q.Add("id", strings.Join(coinmarketcapIds, ","))
-
-	req.Header.Set("Accepts", "application/json")
-	req.Header.Add("X-CMC_PRO_API_KEY", apiKey)
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println()
-		printError(&result, "Error sending request to server")
-		os.Exit(0)
-	}
-
-	respBody, _ := io.ReadAll(resp.Body)
-
-	var quotes Quotes
-	if err := json.Unmarshal(respBody, &quotes); err != nil {
-		printError(&result, err.Error())
-		os.Exit(0)
-	}
+	quotes := callCoinMarketCap(coinmarketcapIds, userData, &result)
 
 	portfolio.Position = make(map[string]Position)
 	for v, k := range quotes.Data {
@@ -74,6 +45,41 @@ func main() {
 	marshaledResult, _ := json.Marshal(result)
 	fmt.Println(string(marshaledResult))
 	os.Exit(0)
+}
+
+func callCoinMarketCap(coinmarketcapIds []string, userData Yml, result *Result) Quotes {
+	coinmarketcapQuoteUrl := "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest"
+	apiKey := userData.ApiKey
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", coinmarketcapQuoteUrl, nil)
+	if err != nil {
+		printError(result, err.Error())
+		os.Exit(0)
+	}
+
+	q := url.Values{}
+	q.Add("id", strings.Join(coinmarketcapIds, ","))
+
+	req.Header.Set("Accepts", "application/json")
+	req.Header.Add("X-CMC_PRO_API_KEY", apiKey)
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := client.Do(req)
+	if err != nil {
+		printError(result, "Error sending request to server")
+		os.Exit(0)
+	}
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	var quotes Quotes
+	if err := json.Unmarshal(respBody, &quotes); err != nil {
+		printError(result, err.Error())
+		os.Exit(0)
+	}
+
+	return quotes
 }
 
 func readYamlFile(filePath string) Yml {
