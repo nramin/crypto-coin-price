@@ -1,6 +1,7 @@
 # Crypto Coin Price
 
-Portfolio can be put in crypto.yaml
+Portfolio can be put in crypto.yaml along with your coinmarketcap API key
+
 Under positions field in yaml file is the UCID or coinmarketcap coin id found on each coin's page. The coin id is the key and the value is the quantity in your portfolio for example.
 
 Run with the following:
