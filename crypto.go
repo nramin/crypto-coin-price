@@ -17,15 +17,15 @@ func main() {
 	var result Result
 	coinmarketcapIds := []string{}
 	coinQty := make(map[string]float64)
-	userData := readYamlFile("crypto.yaml")
+	yamlConfig := readYamlFile("crypto.yaml")
 	var portfolio Portfolio
 
-	for coinId, quantity := range userData.Positions {
+	for coinId, quantity := range yamlConfig.Positions {
 		coinmarketcapIds = append(coinmarketcapIds, coinId)
 		coinQty[coinId] = quantity
 	}
 
-	quotes := callCoinMarketCap(coinmarketcapIds, userData, &result)
+	quotes := callCoinMarketCap(coinmarketcapIds, yamlConfig, &result)
 
 	portfolio.Position = make(map[string]Position)
 	for v, k := range quotes.Data {
@@ -39,7 +39,9 @@ func main() {
 
 	if len(result.Error) == 0 {
 		result.Portfolio = portfolio
-		result.Success = true
+		success := new(bool)
+		*success = true
+		result.Success = success
 	}
 
 	marshaledResult, _ := json.Marshal(result)
@@ -98,7 +100,10 @@ func readYamlFile(filePath string) Yml {
 }
 
 func printError(result *Result, error string) {
-	result.Success = false
+	success := new(bool)
+	*success = false
+
+	result.Success = success
 	result.Error = error
 	marshaledResult, _ := json.Marshal(result)
 	fmt.Println(string(marshaledResult))
@@ -120,7 +125,7 @@ type Coin struct {
 
 type Result struct {
 	Portfolio Portfolio `json:"portfolio,omitempty"`
-	Success   bool      `json:"success,omitempty"`
+	Success   *bool     `json:"success,omitempty"`
 	Error     string    `json:"error,omitempty"`
 }
 
