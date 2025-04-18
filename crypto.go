@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	var result Result
+	var result CryptoPrices
 	coinmarketcapIds := []string{}
 	coinQty := make(map[string]float64)
 	yamlConfig := readYamlFile("crypto.yaml")
@@ -48,7 +48,7 @@ func main() {
 	os.Exit(0)
 }
 
-func callCoinMarketCap(coinmarketcapIds []string, userData Yml, result *Result) Quotes {
+func callCoinMarketCap(coinmarketcapIds []string, userData Yml, result *CryptoPrices) Quotes {
 	coinmarketcapQuoteUrl := "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest"
 	apiKey := userData.ApiKey
 
@@ -98,7 +98,7 @@ func readYamlFile(filePath string) Yml {
 	return yamlFile
 }
 
-func printError(result *Result, error string) {
+func printError(result *CryptoPrices, error string) {
 	success := new(bool)
 	*success = false
 

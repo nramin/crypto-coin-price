@@ -14,7 +14,7 @@ type Coin struct {
 	} `json:"quote"`
 }
 
-type Result struct {
+type CryptoPrices struct {
 	Position   []Position `json:"position"`
 	TotalValue float64    `json:"totalValue"`
 	Success    *bool      `json:"success,omitempty"`
