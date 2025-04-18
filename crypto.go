@@ -10,11 +10,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/nramin/crypto-coin-price/structs"
 	"gopkg.in/yaml.v3"
 )
 
 func main() {
-	var result CryptoPrices
+	var result structs.CryptoPrices
 	coinmarketcapIds := []string{}
 	coinQty := make(map[string]float64)
 	yamlConfig := readYamlFile("crypto.yaml")
@@ -26,9 +27,9 @@ func main() {
 
 	quotes := callCoinMarketCap(coinmarketcapIds, yamlConfig, &result)
 
-	result.Position = []Position{}
+	result.Position = []structs.Position{}
 	for v, k := range quotes.Data {
-		position := Position{
+		position := structs.Position{
 			Symbol:   k.Symbol,
 			Value:    k.Quote.USD.Price * coinQty[v],
 			Quantity: coinQty[v],
@@ -48,7 +49,7 @@ func main() {
 	os.Exit(0)
 }
 
-func callCoinMarketCap(coinmarketcapIds []string, userData Yml, result *CryptoPrices) Quotes {
+func callCoinMarketCap(coinmarketcapIds []string, userData structs.Yml, result *structs.CryptoPrices) structs.Quotes {
 	coinmarketcapQuoteUrl := "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest"
 	apiKey := userData.ApiKey
 
@@ -74,7 +75,7 @@ func callCoinMarketCap(coinmarketcapIds []string, userData Yml, result *CryptoPr
 
 	respBody, _ := io.ReadAll(resp.Body)
 
-	var quotes Quotes
+	var quotes structs.Quotes
 	if err := json.Unmarshal(respBody, &quotes); err != nil {
 		printError(result, err.Error())
 		os.Exit(0)
@@ -83,12 +84,12 @@ func callCoinMarketCap(coinmarketcapIds []string, userData Yml, result *CryptoPr
 	return quotes
 }
 
-func readYamlFile(filePath string) Yml {
+func readYamlFile(filePath string) structs.Yml {
 	b, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
 	}
-	var yamlFile Yml
+	var yamlFile structs.Yml
 
 	err = yaml.Unmarshal([]byte(b), &yamlFile)
 	if err != nil {
@@ -98,7 +99,7 @@ func readYamlFile(filePath string) Yml {
 	return yamlFile
 }
 
-func printError(result *CryptoPrices, error string) {
+func printError(result *structs.CryptoPrices, error string) {
 	success := new(bool)
 	*success = false
 

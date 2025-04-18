@@ -1,4 +1,4 @@
-package main
+package structs
 
 type Quotes struct {
 	Data map[string]Coin `json:"data"`
