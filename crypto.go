@@ -18,7 +18,6 @@ func main() {
 	coinmarketcapIds := []string{}
 	coinQty := make(map[string]float64)
 	yamlConfig := readYamlFile("crypto.yaml")
-	var portfolio Portfolio
 
 	for coinId, quantity := range yamlConfig.Positions {
 		coinmarketcapIds = append(coinmarketcapIds, coinId)
@@ -27,18 +26,18 @@ func main() {
 
 	quotes := callCoinMarketCap(coinmarketcapIds, yamlConfig, &result)
 
-	portfolio.Position = make(map[string]Position)
+	result.Position = []Position{}
 	for v, k := range quotes.Data {
-		var position Position
-		position.Value = k.Quote.USD.Price * coinQty[v]
-		position.Quantity = coinQty[v]
-
-		portfolio.Position[k.Symbol] = position
-		portfolio.TotalValue += (k.Quote.USD.Price * coinQty[v])
+		position := Position{
+			Symbol:   k.Symbol,
+			Value:    k.Quote.USD.Price * coinQty[v],
+			Quantity: coinQty[v],
+		}
+		result.Position = append(result.Position, position)
+		result.TotalValue += (k.Quote.USD.Price * coinQty[v])
 	}
 
 	if len(result.Error) == 0 {
-		result.Portfolio = portfolio
 		success := new(bool)
 		*success = true
 		result.Success = success
@@ -107,39 +106,4 @@ func printError(result *Result, error string) {
 	result.Error = error
 	marshaledResult, _ := json.Marshal(result)
 	fmt.Println(string(marshaledResult))
-}
-
-type Quotes struct {
-	Data map[string]Coin `json:"data"`
-}
-
-type Coin struct {
-	ID     int    `json:"id"`
-	Symbol string `json:"symbol"`
-	Quote  struct {
-		USD struct {
-			Price float64 `json:"price"`
-		} `json:"USD"`
-	} `json:"quote"`
-}
-
-type Result struct {
-	Portfolio Portfolio `json:"portfolio,omitempty"`
-	Success   *bool     `json:"success,omitempty"`
-	Error     string    `json:"error,omitempty"`
-}
-
-type Portfolio struct {
-	Position   map[string]Position `json:"position"`
-	TotalValue float64             `json:"totalValue"`
-}
-
-type Position struct {
-	Quantity float64 `json:"quantity"`
-	Value    float64 `json:"value"`
-}
-
-type Yml struct {
-	ApiKey    string             `yaml:"apiKey"`
-	Positions map[string]float64 `yaml:"positions"`
 }
