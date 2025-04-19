@@ -27,14 +27,14 @@ func main() {
 
 	quotes := callCoinMarketCap(coinmarketcapIds, yamlConfig, &result)
 
-	result.Position = []structs.Position{}
+	result.Positions = []structs.Position{}
 	for v, k := range quotes.Data {
 		position := structs.Position{
 			Symbol:   k.Symbol,
 			Value:    k.Quote.USD.Price * coinQty[v],
 			Quantity: coinQty[v],
 		}
-		result.Position = append(result.Position, position)
+		result.Positions = append(result.Positions, position)
 		result.TotalValue += (k.Quote.USD.Price * coinQty[v])
 	}
 
