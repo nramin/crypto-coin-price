@@ -16,9 +16,9 @@ type Coin struct {
 
 type CryptoPrices struct {
 	Positions  []Position `json:"positions"`
-	TotalValue float64    `json:"totalValue"`
-	Success    *bool      `json:"success,omitempty"`
-	Error      string     `json:"error,omitempty"`
+	TotalValue float64    `json:"totalValue,omitempty" bson:"totalValue,omitempty"`
+	Success    *bool      `json:"success,omitempty" bson:"success,omitempty"`
+	Error      string     `json:"error,omitempty" bson:"error,omitempty"`
 }
 
 type Position struct {
