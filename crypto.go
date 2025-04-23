@@ -44,7 +44,12 @@ func main() {
 		result.Success = success
 	}
 
-	marshaledResult, _ := json.Marshal(result)
+	marshaledResult, err := json.Marshal(result)
+	if err != nil {
+		printError(&result, err.Error())
+		os.Exit(0)
+	}
+
 	fmt.Println(string(marshaledResult))
 	os.Exit(0)
 }
@@ -73,7 +78,11 @@ func callCoinMarketCap(coinmarketcapIds []string, userData structs.Yml, result *
 		os.Exit(0)
 	}
 
-	respBody, _ := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		printError(result, err.Error())
+		os.Exit(0)
+	}
 
 	var quotes structs.Quotes
 	if err := json.Unmarshal(respBody, &quotes); err != nil {
